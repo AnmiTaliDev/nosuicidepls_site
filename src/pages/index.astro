@@ -1,0 +1,285 @@
+---
+import Layout from '../layouts/Layout.astro';
+import ContentBlock from '../components/ContentBlock.astro';
+import CountrySelector from '../components/CountrySelector.astro';
+import HelplineCard from '../components/HelplineCard.astro';
+import { getTranslations } from '../i18n/utils';
+import helplines from '../data/helplines.json';
+
+const t = getTranslations();
+const allCountries = Object.values(helplines);
+---
+
+<Layout
+  title={t.meta.title}
+  description={t.meta.description}
+  keywords={t.meta.keywords}
+>
+  <!-- Секция 1: Экран паузы -->
+  <section id="pause" class="section-fullscreen pause-section" aria-label="Экран паузы">
+    <div class="pause-content text-center">
+      <h1 class="pause-title">{t.pause.title}</h1>
+      <p class="pause-subtitle">{t.pause.subtitle}</p>
+
+      <div class="pause-actions mt-xl">
+        <button
+          id="scroll-to-helpline"
+          class="btn btn-primary btn-large"
+          type="button"
+          aria-label={t.common.helpline}
+        >
+          {t.common.helpline}
+        </button>
+        <button
+          id="scroll-to-content"
+          class="btn btn-secondary btn-large"
+          type="button"
+          aria-label={t.pause.ready}
+        >
+          {t.pause.ready}
+        </button>
+      </div>
+    </div>
+
+    <div class="scroll-indicator" aria-hidden="true">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 5v14M19 12l-7 7-7-7"/>
+      </svg>
+    </div>
+  </section>
+
+  <!-- Секция 2: Основной текст поддержки -->
+  <section id="content" class="section content-section" aria-label="Текст поддержки">
+    <div class="container">
+      <ContentBlock text={t.content.block1} />
+      <ContentBlock text={t.content.block2} />
+      <ContentBlock text={t.content.block3} />
+      <ContentBlock text={t.content.block4} />
+      <ContentBlock text={t.content.block5} />
+      <ContentBlock text={t.content.block6} highlight={true} />
+      <ContentBlock text={t.content.block7} />
+      <ContentBlock text={t.content.block8} />
+      <ContentBlock text={t.content.block9} />
+      <ContentBlock text={t.content.block10} highlight={true} />
+    </div>
+  </section>
+
+  <!-- Секция 3: Ресурсы и контакты -->
+  <section id="resources" class="section resources-section" aria-label="Ресурсы и контакты">
+    <div class="container">
+      <h2 class="resources-title">{t.resources.title}</h2>
+
+      <div class="resources-selector mb-xl">
+        <CountrySelector label={t.resources.selectCountry} />
+      </div>
+
+      <h3 class="resources-subtitle">{t.resources.allCountries}</h3>
+
+      <div class="resources-grid">
+        {allCountries.map(country => (
+          <HelplineCard
+            countryName={country.name}
+            lines={country.lines}
+            freeLabel={t.common.free}
+          />
+        ))}
+      </div>
+
+      <div class="help-others card mt-2xl">
+        <h3 class="mb-md">{t.resources.helpOthers}</h3>
+        <p class="text-secondary mb-md">{t.resources.helpOthersText1}</p>
+        <ul class="help-others-list">
+          <li>{t.resources.helpOthersText2}</li>
+          <li>{t.resources.helpOthersText3}</li>
+          <li>{t.resources.helpOthersText4}</li>
+          <li>{t.resources.helpOthersText5}</li>
+          <li>{t.resources.helpOthersText6}</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Футер -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <p>
+          <a href="https://github.com/AnmiTaliDev/NoSuicide_site" target="_blank" rel="noopener noreferrer">
+            {t.footer.source}
+          </a>
+        </p>
+        <p class="text-muted">
+          {t.footer.developer}: <a href="https://github.com/AnmiTaliDev" target="_blank" rel="noopener noreferrer">AnmiTaliDev</a>
+          &nbsp;·&nbsp;
+          {t.footer.ideaAuthor}: GLOR
+        </p>
+      </div>
+    </div>
+  </footer>
+</Layout>
+
+<style>
+  /* Секция паузы */
+  .pause-section {
+    position: relative;
+    padding-bottom: 100px;
+  }
+
+  .pause-content {
+    max-width: 600px;
+    padding: 0 var(--space-lg);
+  }
+
+  .pause-title {
+    margin-bottom: var(--space-xl);
+    color: var(--color-text);
+  }
+
+  .pause-subtitle {
+    font-size: 1.25rem;
+    color: var(--color-text-secondary);
+    line-height: 1.7;
+    font-weight: 400;
+  }
+
+  .pause-actions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+    align-items: center;
+    max-width: 100%;
+  }
+
+  @media (min-width: 640px) {
+    .pause-actions {
+      flex-direction: row;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+  }
+
+  .scroll-indicator {
+    position: absolute;
+    bottom: 120px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: var(--color-text-muted);
+    animation: bounce 2s ease-in-out infinite;
+  }
+
+  @keyframes bounce {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(10px); }
+  }
+
+  /* Секция контента */
+  .content-section {
+    padding-top: var(--space-3xl);
+    padding-bottom: var(--space-3xl);
+  }
+
+  /* Секция ресурсов */
+  .resources-section {
+    background: var(--color-bg-secondary);
+    padding-bottom: var(--space-3xl);
+  }
+
+  .resources-title {
+    margin-bottom: var(--space-xl);
+  }
+
+  .resources-subtitle {
+    margin-bottom: var(--space-lg);
+    color: var(--color-text-secondary);
+  }
+
+  .resources-selector {
+    max-width: 300px;
+  }
+
+  .resources-grid {
+    display: grid;
+    gap: var(--space-lg);
+  }
+
+  @media (min-width: 768px) {
+    .resources-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  .help-others-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+
+  .help-others-list li {
+    padding-left: var(--space-lg);
+    position: relative;
+    color: var(--color-text-secondary);
+  }
+
+  .help-others-list li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.7em;
+    width: 6px;
+    height: 6px;
+    background: var(--color-accent);
+    border-radius: 50%;
+  }
+
+  /* Футер */
+  .footer {
+    background: var(--color-bg);
+    border-top: 1px solid var(--color-border);
+    padding: var(--space-xl) var(--space-lg);
+  }
+
+  .footer-content {
+    text-align: center;
+  }
+
+  .footer-content p {
+    margin-bottom: var(--space-sm);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .scroll-indicator {
+      animation: none;
+    }
+  }
+</style>
+
+<script>
+  function initNavigation() {
+    // Кнопка "Телефон доверия"
+    const scrollToHelplineBtn = document.getElementById('scroll-to-helpline');
+    const resourcesSection = document.getElementById('resources');
+
+    if (scrollToHelplineBtn && resourcesSection) {
+      scrollToHelplineBtn.addEventListener('click', () => {
+        resourcesSection.scrollIntoView({ behavior: 'smooth' });
+      });
+    }
+
+    // Кнопка "Я готов читать дальше"
+    const scrollToContentBtn = document.getElementById('scroll-to-content');
+    const contentSection = document.getElementById('content');
+
+    if (scrollToContentBtn && contentSection) {
+      scrollToContentBtn.addEventListener('click', () => {
+        contentSection.scrollIntoView({ behavior: 'smooth' });
+      });
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initNavigation);
+  } else {
+    initNavigation();
+  }
+</script>

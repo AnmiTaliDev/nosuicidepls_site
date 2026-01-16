@@ -1,0 +1,73 @@
+---
+import { getAllCountries } from '../i18n/utils';
+
+interface Props {
+  label?: string;
+  id?: string;
+}
+
+const { label = 'Выбери страну', id = 'country-selector' } = Astro.props;
+const countries = getAllCountries();
+---
+
+<div class="country-selector">
+  <label for={id} class="country-label">{label}</label>
+  <select id={id} class="country-select" aria-label={label}>
+    {countries.map(country => (
+      <option value={country.code}>
+        {country.name}
+      </option>
+    ))}
+  </select>
+</div>
+
+<style>
+  .country-selector {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+
+  .country-label {
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+  }
+
+  .country-select {
+    min-width: 200px;
+  }
+</style>
+
+<script>
+  function initCountrySelector() {
+    const selector = document.getElementById('country-selector') as HTMLSelectElement;
+    if (!selector) return;
+
+    // Устанавливаем сохранённое значение
+    const saved = localStorage.getItem('userCountry');
+    if (saved) {
+      selector.value = saved;
+    }
+
+    selector.addEventListener('change', () => {
+      const country = selector.value;
+      localStorage.setItem('userCountry', country);
+
+      // Оповещаем другие компоненты
+      window.dispatchEvent(new CustomEvent('countryChanged', {
+        detail: { country }
+      }));
+    });
+
+    // Слушаем изменения от других компонентов
+    window.addEventListener('countryChanged', ((event: CustomEvent<{ country: string }>) => {
+      selector.value = event.detail.country;
+    }) as EventListener);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initCountrySelector);
+  } else {
+    initCountrySelector();
+  }
+</script>

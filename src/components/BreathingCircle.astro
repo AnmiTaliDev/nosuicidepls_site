@@ -1,0 +1,122 @@
+---
+interface Props {
+  breatheInText?: string;
+  breatheOutText?: string;
+}
+
+const {
+  breatheInText = 'Вдох',
+  breatheOutText = 'Выдох'
+} = Astro.props;
+---
+
+<div class="breathing-container" aria-live="polite" aria-atomic="true">
+  <div class="breathing-circle" aria-hidden="true">
+    <div class="breathing-inner"></div>
+  </div>
+  <p class="breathing-text" data-breathe-in={breatheInText} data-breathe-out={breatheOutText}>
+    {breatheInText}
+  </p>
+</div>
+
+<style>
+  .breathing-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-xl);
+  }
+
+  .breathing-circle {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%,
+      rgba(255, 160, 122, 0.35) 0%,
+      rgba(255, 160, 122, 0.12) 50%,
+      transparent 75%
+    );
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: breathe 8s ease-in-out infinite;
+    filter: blur(0.5px);
+  }
+
+  .breathing-inner {
+    width: 55%;
+    height: 55%;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%,
+      rgba(255, 160, 122, 0.7) 0%,
+      rgba(255, 139, 106, 0.4) 60%,
+      rgba(255, 160, 122, 0.15) 100%
+    );
+    box-shadow:
+      0 0 40px rgba(255, 160, 122, 0.5),
+      0 0 80px rgba(255, 160, 122, 0.25),
+      inset 0 0 30px rgba(255, 139, 106, 0.3);
+  }
+
+  .breathing-text {
+    font-size: 1.125rem;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.25em;
+    font-weight: 500;
+    margin: 0;
+    transition: opacity 0.4s ease;
+  }
+
+  @keyframes breathe {
+    0%, 100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.4);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .breathing-circle {
+      animation: none;
+      transform: scale(1.2);
+    }
+  }
+
+  @media (min-width: 768px) {
+    .breathing-circle {
+      width: 240px;
+      height: 240px;
+    }
+
+    .breathing-text {
+      font-size: 1.25rem;
+    }
+  }
+</style>
+
+<script>
+  function initBreathingAnimation() {
+    const textElement = document.querySelector('.breathing-text');
+    if (!textElement) return;
+
+    const breatheIn = textElement.getAttribute('data-breathe-in') || 'Вдох';
+    const breatheOut = textElement.getAttribute('data-breathe-out') || 'Выдох';
+
+    let isInhaling = true;
+
+    // Сменяем текст каждые 4 секунды (половина цикла дыхания)
+    setInterval(() => {
+      textElement.textContent = isInhaling ? breatheOut : breatheIn;
+      isInhaling = !isInhaling;
+    }, 4000);
+  }
+
+  // Инициализация при загрузке страницы
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initBreathingAnimation);
+  } else {
+    initBreathingAnimation();
+  }
+</script>

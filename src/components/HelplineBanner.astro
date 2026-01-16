@@ -1,0 +1,235 @@
+---
+interface Props {
+  helplineLabel?: string;
+  freeLabel?: string;
+  changeCountryLabel?: string;
+}
+
+const {
+  helplineLabel = 'Телефон доверия',
+  freeLabel = 'бесплатно',
+  changeCountryLabel = 'Сменить страну'
+} = Astro.props;
+---
+
+<div
+  class="helpline-banner"
+  id="helpline-banner"
+  role="complementary"
+  aria-label={helplineLabel}
+  data-free-label={freeLabel}
+  data-change-country-label={changeCountryLabel}
+>
+  <div class="helpline-content">
+    <div class="helpline-info">
+      <span class="helpline-label">{helplineLabel}</span>
+      <a href="tel:88002000122" class="helpline-phone" id="helpline-phone">
+        8-800-2000-122
+      </a>
+      <span class="helpline-badge" id="helpline-badge">{freeLabel}</span>
+    </div>
+    <button
+      class="helpline-change"
+      id="helpline-change"
+      type="button"
+      aria-label={changeCountryLabel}
+      title={changeCountryLabel}
+    >
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="10"></circle>
+        <path d="M2 12h20"></path>
+        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<style>
+  .helpline-banner {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(to top, rgba(36, 32, 47, 0.98) 0%, rgba(26, 22, 37, 0.96) 100%);
+    backdrop-filter: blur(16px);
+    border-top: 1px solid var(--color-border);
+    padding: 1.125rem var(--space-lg);
+    z-index: 1000;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+  }
+
+  .helpline-content {
+    max-width: 800px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-md);
+  }
+
+  .helpline-info {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--space-sm) var(--space-md);
+  }
+
+  .helpline-label {
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+  }
+
+  .helpline-phone {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--color-accent);
+    letter-spacing: 0.02em;
+  }
+
+  .helpline-phone:hover {
+    color: var(--color-accent-hover);
+  }
+
+  .helpline-badge {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-success);
+    background: rgba(152, 216, 200, 0.18);
+    padding: 0.3rem 0.65rem;
+    border-radius: var(--radius-full);
+  }
+
+  .helpline-badge:empty {
+    display: none;
+  }
+
+  .helpline-change {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: transparent;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    flex-shrink: 0;
+  }
+
+  .helpline-change:hover {
+    background: var(--color-accent-soft);
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+  }
+
+  .helpline-change:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  @media (max-width: 480px) {
+    .helpline-banner {
+      padding: var(--space-sm) var(--space-md);
+    }
+
+    .helpline-label {
+      display: none;
+    }
+
+    .helpline-phone {
+      font-size: 1rem;
+    }
+  }
+</style>
+
+<script>
+  import helplines from '../data/helplines.json';
+
+  type CountryCode = keyof typeof helplines;
+
+  interface HelplineData {
+    primary: {
+      phone: string;
+      free: boolean;
+    };
+  }
+
+  function formatPhoneForTel(phone: string): string {
+    return phone.replace(/[^\d+]/g, '');
+  }
+
+  function updateBanner(countryCode: CountryCode) {
+    const banner = document.getElementById('helpline-banner');
+    const phoneLink = document.getElementById('helpline-phone');
+    const badge = document.getElementById('helpline-badge');
+
+    if (!banner || !phoneLink || !badge) return;
+
+    const country = (helplines as Record<string, HelplineData>)[countryCode];
+    if (!country?.primary) return;
+
+    const { phone, free } = country.primary;
+
+    phoneLink.textContent = phone;
+    phoneLink.setAttribute('href', `tel:${formatPhoneForTel(phone)}`);
+
+    const freeLabel = banner.getAttribute('data-free-label') || 'бесплатно';
+    badge.textContent = free ? freeLabel : '';
+
+    localStorage.setItem('userCountry', countryCode);
+  }
+
+  async function detectCountry(): Promise<CountryCode> {
+    // Сначала проверяем сохранённое значение
+    const saved = localStorage.getItem('userCountry');
+    if (saved && saved in helplines) {
+      return saved as CountryCode;
+    }
+
+    // Пытаемся определить по IP
+    try {
+      const response = await fetch('https://ip-api.com/json/?fields=countryCode', {
+        signal: AbortSignal.timeout(3000)
+      });
+      const data = await response.json();
+      if (data.countryCode && data.countryCode in helplines) {
+        return data.countryCode as CountryCode;
+      }
+    } catch {
+      // Игнорируем ошибки
+    }
+
+    return 'RU';
+  }
+
+  function scrollToResources() {
+    const resourcesSection = document.getElementById('resources');
+    if (resourcesSection) {
+      resourcesSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  }
+
+  async function initHelplineBanner() {
+    const country = await detectCountry();
+    updateBanner(country);
+
+    const changeButton = document.getElementById('helpline-change');
+    if (changeButton) {
+      changeButton.addEventListener('click', scrollToResources);
+    }
+
+    // Слушаем изменения страны из других компонентов
+    window.addEventListener('countryChanged', ((event: CustomEvent<{ country: CountryCode }>) => {
+      updateBanner(event.detail.country);
+    }) as EventListener);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initHelplineBanner);
+  } else {
+    initHelplineBanner();
+  }
+</script>

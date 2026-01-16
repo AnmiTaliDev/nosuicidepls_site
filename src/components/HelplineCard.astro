@@ -1,0 +1,110 @@
+---
+interface HelplineLine {
+  phone: string;
+  name: string;
+  description?: string;
+  hours?: string;
+  free: boolean;
+}
+
+interface Props {
+  countryName: string;
+  lines: HelplineLine[];
+  freeLabel?: string;
+}
+
+const { countryName, lines, freeLabel = 'бесплатно' } = Astro.props;
+
+function formatPhoneForTel(phone: string): string {
+  return phone.replace(/[^\d+]/g, '');
+}
+---
+
+<div class="helpline-card card">
+  <h4 class="helpline-card-title">{countryName}</h4>
+  <ul class="helpline-list" role="list">
+    {lines.map(line => (
+      <li class="helpline-item">
+        <div class="helpline-item-header">
+          <a href={`tel:${formatPhoneForTel(line.phone)}`} class="helpline-item-phone">
+            {line.phone}
+          </a>
+          {line.free && (
+            <span class="helpline-item-free">{freeLabel}</span>
+          )}
+        </div>
+        <div class="helpline-item-name">{line.name}</div>
+        {(line.description || line.hours) && (
+          <div class="helpline-item-details">
+            {line.description && <span>{line.description}</span>}
+            {line.description && line.hours && <span> · </span>}
+            {line.hours && <span>{line.hours}</span>}
+          </div>
+        )}
+      </li>
+    ))}
+  </ul>
+</div>
+
+<style>
+  .helpline-card {
+    margin-bottom: var(--space-lg);
+  }
+
+  .helpline-card-title {
+    font-size: 1.125rem;
+    margin-bottom: var(--space-md);
+    color: var(--color-text);
+  }
+
+  .helpline-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+  }
+
+  .helpline-item {
+    padding-bottom: var(--space-md);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .helpline-item:last-child {
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+
+  .helpline-item-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-xs);
+  }
+
+  .helpline-item-phone {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--color-accent);
+  }
+
+  .helpline-item-free {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-success);
+    background: rgba(152, 216, 200, 0.18);
+    padding: 0.25rem 0.6rem;
+    border-radius: var(--radius-full);
+  }
+
+  .helpline-item-name {
+    font-size: 0.9375rem;
+    color: var(--color-text);
+    margin-bottom: var(--space-xs);
+  }
+
+  .helpline-item-details {
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+  }
+</style>
